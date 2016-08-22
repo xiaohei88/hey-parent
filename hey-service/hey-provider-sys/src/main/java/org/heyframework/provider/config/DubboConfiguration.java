@@ -1,4 +1,4 @@
-package org.heyframework.provider.boot;
+package org.heyframework.provider.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
