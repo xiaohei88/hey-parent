@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="abstractXADataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close" abstract="true">
+		<!-- 因为OracleXAConnection的愿意，集成druid分布式事务没用起来 -->
+		<!-- <property name="xaDataSourceClassName" value="com.alibaba.druid.pool.xa.DruidXADataSource" /> -->
+		<property name="xaDataSourceClassName" value="oracle.jdbc.xa.client.OracleXADataSource" />
+		<property name="poolSize" value="10" />
+		<property name="minPoolSize" value="5" />
+		<property name="maxPoolSize" value="10" />
+		<property name="borrowConnectionTimeout" value="60" />
+		<property name="reapTimeout" value="20" />
+		<property name="maxIdleTime" value="60" />
+		<property name="maintenanceInterval" value="60" />
+		<property name="loginTimeout" value="60" />
+		<!-- <property name="testQuery" value="select 1 from dual" /> -->
+	</bean>
+
+	<!-- <bean id="druidDataSource" parent="abstractXADataSource"> -->
+	<!-- <property name="uniqueResourceName" value="masterDB" /> -->
+	<!-- <property name="xaProperties"> -->
+	<!-- <props> -->
+	<!-- <prop key="url">${druid.url}</prop> -->
+	<!-- <prop key="username">${druid.username}</prop> -->
+	<!-- <prop key="password">${druid.password}</prop> -->
+	<!-- <prop key="initialSize">${druid.initialSize}</prop> -->
+	<!-- <prop key="minIdle">${druid.minIdle}</prop> -->
+	<!-- <prop key="maxActive">${druid.maxActive}</prop> -->
+	<!-- <prop key="maxWait">${druid.maxWait}</prop> -->
+	<!-- <prop key="timeBetweenEvictionRunsMillis">${druid.timeBetweenEvictionRunsMillis}</prop> -->
+	<!-- <prop key="minEvictableIdleTimeMillis">${druid.minEvictableIdleTimeMillis}</prop> -->
+	<!-- <prop key="validationQuery">${druid.validationQuery}</prop> -->
+	<!-- <prop key="testWhileIdle">true</prop> -->
+	<!-- <prop key="testOnBorrow">false</prop> -->
+	<!-- <prop key="testOnReturn">false</prop> -->
+	<!-- <prop key="poolPreparedStatements">${druid.poolPreparedStatements}</prop> -->
+	<!-- <prop key="maxPoolPreparedStatementPerConnectionSize">20</prop> -->
+	<!-- <prop key="filters">${druid.filters}</prop> -->
+	<!-- </props> -->
+	<!-- </property> -->
+	<!-- </bean> -->
+
+	<bean id="oracleDataSource" parent="abstractXADataSource">
+		<property name="uniqueResourceName" value="slaveDB" />
+		<property name="xaProperties">
+			<props>
+				<prop key="URL">${druid.url}</prop>
+				<prop key="user">${druid.username}</prop>
+				<prop key="password">${druid.password}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- mybatis SqlSessionFactoryBean -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="oracleDataSource" />
+	</bean>
+
+
+	<bean id="masterMapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="org.heyframework.sys.**.mapper" />
+		<property name="markerInterface" value="org.heyframework.common.persistence.mybatis.base.MyBatisBaseMapper" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+
+	<bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager" init-method="init" destroy-method="close">
+		<property name="forceShutdown">
+			<value>true</value>
+		</property>
+	</bean>
+
+	<bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
+		<property name="transactionTimeout" value="300" />
+	</bean>
+
+	<!-- spring 事务管理器 -->
+	<bean id="springTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+		<property name="transactionManager" ref="atomikosTransactionManager" />
+		<property name="userTransaction" ref="atomikosUserTransaction" />
+		<!-- 必须设置，否则程序出现异常 JtaTransactionManager does not support custom isolation levels by default -->
+		<property name="allowCustomIsolationLevels" value="true" />
+	</bean>
+
+	<!-- 使用注解方式定义事务 -->
+	<tx:annotation-driven transaction-manager="springTransactionManager" />
+
+	<!-- transaction aop -->
+	<aop:config proxy-target-class="true">
+		<!-- execution(return type | package | class | method) -->
+		<aop:advisor pointcut="execution(* org.heyframework..service..*.*(..))" advice-ref="userTxAdvice" />
+	</aop:config>
+
+	<tx:advice id="userTxAdvice" transaction-manager="springTransactionManager">
+		<tx:attributes>
+			<tx:method name="delete*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception" no-rollback-for="java.lang.RuntimeException" />
+			<tx:method name="insert*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.RuntimeException" />
+			<tx:method name="create*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.RuntimeException" />
+			<tx:method name="save*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.RuntimeException" />
+			<tx:method name="update*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception" />
+			<tx:method name="get*" propagation="SUPPORTS" />
+			<tx:method name="query*" propagation="SUPPORTS" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- database -->
+	<bean id="dataBaseFactoryBean" class="org.heyframework.common.persistence.mybatis.database.DataBaseFactoryBean">
+		<property name="dataBase" value="org.heyframework.common.persistence.mybatis.database.OracleDataBase" />
+	</bean>
+</beans>

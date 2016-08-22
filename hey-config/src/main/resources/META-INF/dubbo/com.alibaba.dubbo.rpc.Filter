@@ -1,0 +1,2 @@
+providerTraceFilter=org.heyframework.webcommon.dubbo.filter.ProviderTraceFilter
+consumerTraceFilter=org.heyframework.webcommon.dubbo.filter.ConsumerTraceFilter

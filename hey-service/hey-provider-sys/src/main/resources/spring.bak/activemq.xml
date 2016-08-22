@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 重投策略 -->
+	<!-- <bean id="redeliveryPolicy" class="org.apache.activemq.RedeliveryPolicy"> -->
+	<!-- ReDelivery的时间间隔是100毫秒 -->
+	<!-- <property name="redeliveryDelay" value="100" /> -->
+	<!-- 最大重发次数是4次 -->
+	<!-- <property name="maximumRedeliveries" value="4" /> -->
+	<!-- </bean> -->
+
+	<!-- activemq连接工厂 -->
+	<bean id="activemqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="${zmp.activemq.brokerURL}" />
+		<!-- <property name="redeliveryPolicy" ref="redeliveryPolicy" /> -->
+	</bean>
+
+	<!-- 连接池工厂配置 -->
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+		<property name="connectionFactory" ref="activemqConnectionFactory" />
+		<property name="maxConnections" value="10" />
+	</bean>
+
+	<!-- Spring JMS Template -->
+	<bean id="jmsQueueTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="subject" />
+		<!-- 非pub/sub模型（发布/订阅），即队列模式 -->
+		<property name="pubSubDomain" value="false" />
+	</bean>
+
+	<bean id="jmsTopicTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="subject" />
+		<!-- pub/sub模型（发布/订阅） -->
+		<property name="pubSubDomain" value="true" />
+	</bean>
+
+	<bean id="topicReceiver" class="org.heyframework.sys.sys.jms.listener.TopicReceiver"></bean>
+	<bean id="queueReceiver" class="org.heyframework.sys.sys.jms.listener.QueueReceiver"></bean>
+
+	<!-- 定义Queue监听器 -->
+	<jms:listener-container destination-type="queue" container-type="default" connection-factory="jmsFactory"
+		acknowledge="auto" transaction-manager="jmsTransactionManager" concurrency="${zmp.activemq.concurrency}">
+		<jms:listener destination="adduser.queue" ref="queueReceiver" />
+	</jms:listener-container>
+
+	<!-- 定义Topic监听器 -->
+	<jms:listener-container destination-type="topic" container-type="default" connection-factory="jmsFactory"
+		acknowledge="auto" transaction-manager="jmsTransactionManager">
+		<jms:listener destination="adduser.topic" ref="topicReceiver" />
+	</jms:listener-container>
+
+	<!-- jms事务 -->
+	<bean id="jmsTransactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="jmsFactory" />
+	</bean>
+</beans>

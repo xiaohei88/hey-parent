@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="org.heyframework.provider.sys.auth.mapper.UserMapper">
+
+	<select id="queryStaff" resultType="java.util.Map">
+		SELECT STAFF_CODE, STAFF_NAME FROM STAFF WHERE STATE='A'
+	</select>
+
+	<update id="updateA">
+		UPDATE WF_INSTANCE SET INSTANCE_ID = '1941' WHERE INSTANCE_ID ='1941'
+	</update>
+
+	<update id="updateB">
+		UPDATE WF_INSTANCE SET STATE = 'D' WHERE INSTANCE_ID ='1941'
+	</update>
+</mapper>
