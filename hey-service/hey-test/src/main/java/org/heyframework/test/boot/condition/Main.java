@@ -2,6 +2,12 @@ package org.heyframework.test.boot.condition;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+/**
+ * boot下Condition测试
+ * 
+ * @author helei
+ *
+ */
 public class Main {
 
 	private static AnnotationConfigApplicationContext context;
