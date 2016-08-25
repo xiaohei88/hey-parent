@@ -15,6 +15,7 @@
 		<module>hey-boot</module>
 		<module>hey-api-sys</module>
 		<module>hey-provider-sys</module>
+		<module>hey-test</module>
 	</modules>
 
 	<properties>
