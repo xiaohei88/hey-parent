@@ -85,4 +85,21 @@ public class ConsistentHash1<S> { // S类封装了机器节点的信息 ，如na
 		return h;
 	}
 
+	public static void main(String[] args) {
+		// tailMap(K fromKey)
+		// 方法用于返回此映射，其键大于或等于fromKey的部分视图。返回的映射受此映射支持，因此改变返回映射反映在此映射中，反之亦然。
+		TreeMap<Integer, String> treemap = new TreeMap<Integer, String>();
+		SortedMap<Integer, String> treemapincl = new TreeMap<Integer, String>();
+
+		// populating tree map
+		treemap.put(2, "two");
+		treemap.put(1, "one");
+		treemap.put(3, "three");
+		treemap.put(6, "six");
+		treemap.put(5, "five");
+
+		System.out.println("Getting tail map");
+		treemapincl = treemap.tailMap(1);
+		System.out.println("Tail map values: " + treemapincl);
+	}
 }
