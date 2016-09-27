@@ -9,6 +9,7 @@ import javax.jms.Session;
 
 import org.apache.commons.collections.MapUtils;
 import org.heyframework.api.sys.auth.bean.User;
+import org.heyframework.api.sys.auth.service.OrgService;
 import org.heyframework.api.sys.auth.service.UserService;
 import org.heyframework.common.cache.CacheStringRedisTemplate;
 import org.heyframework.provider.sys.auth.mapper.UserMapper;
@@ -30,6 +31,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private CacheStringRedisTemplate redisTemplate;
+
+	@Autowired
+	private OrgService orgService;
 
 	@Override
 	public void add() {
@@ -66,6 +70,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void update() {
 		userMapper.updateB();
-		userMapper.updateA();
+		orgService.update();
 	}
 }
