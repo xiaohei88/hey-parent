@@ -1,4 +1,4 @@
-package org.heyframework.common.test.classloader;
+package org.heyframework.test.classloader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

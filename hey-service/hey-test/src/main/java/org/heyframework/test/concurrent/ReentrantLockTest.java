@@ -1,4 +1,4 @@
-package org.heyframework.common.test.concurrent;
+package org.heyframework.test.concurrent;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;

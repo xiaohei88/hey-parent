@@ -1,4 +1,4 @@
-package org.heyframework.common.test.algorithm;
+package org.heyframework.test.algorithm;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class ConsistentHash1<S> { // S类封装了机器节点的信息 ，如name、password、ip、port等
+public class ConsistentHash<S> { // S类封装了机器节点的信息 ，如name、password、ip、port等
 
 	private TreeMap<Long, S> nodes; // 虚拟节点
 	private List<S> shards; // 真实机器节点
 	private final int NODE_NUM = 100; // 每个机器节点关联的虚拟节点个数
 
-	public ConsistentHash1(List<S> shards) {
+	public ConsistentHash(List<S> shards) {
 		super();
 		this.shards = shards;
 		init();

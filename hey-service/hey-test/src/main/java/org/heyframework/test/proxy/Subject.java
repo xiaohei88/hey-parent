@@ -1,4 +1,4 @@
-package org.heyframework.common.test.proxy;
+package org.heyframework.test.proxy;
 
 public interface Subject {
 
