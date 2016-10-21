@@ -9,7 +9,6 @@
 	<modules>
 		<module>hey-service</module>
 		<module>hey-common</module>
-		<module>hey-webcommon</module>
 		<module>hey-config</module>
 	</modules>
 

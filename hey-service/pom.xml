@@ -12,6 +12,7 @@
 	<modules>
 		<module>hey</module>
 		<module>hey-web</module>
+		<module>hey-webcommon</module>
 		<module>hey-boot</module>
 		<module>hey-api-sys</module>
 		<module>hey-provider-sys</module>
@@ -78,10 +79,10 @@
 			<version>4.0.2</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo</artifactId>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>com.alibaba</groupId> -->
+		<!-- <artifactId>dubbo</artifactId> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
