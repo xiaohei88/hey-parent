@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:batch="http://www.springframework.org/schema/batch" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/batch
+        http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+	<import resource="job-context.xml" />
+
+	<batch:job id="billJob">
+		<batch:step id="billStep">
+			<batch:tasklet transaction-manager="transactionManager">
+				<!-- commit-interval:表示提交间隔的大小，即每处理4条数据，进行一次写入操作，这样可以提高写的效率，在面向大数据量的批处理操作中，可以将commit-interval设置1000~10000的值 -->
+				<batch:chunk reader="itemReader" writer="itemWriter" processor="creditBillProcessor" commit-interval="4"></batch:chunk>
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+
+	<bean id="itemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="file:/Users/helei/Downloads/bill.txt" />
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer" ref="lineTokenizer" />
+				<property name="fieldSetMapper">
+					<bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+						<property name="prototypeBeanName" value="creditBill"></property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Prototype: 每次对bean的请求都会创建一个新的bean实例。Spring默认为单例模式(singleton)。 -->
+	<bean id="creditBill" class="org.heyframework.test.batch.CreditBill" scope="prototype"></bean>
+
+	<bean id="lineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value="," />
+		<property name="names">
+			<list>
+				<value>accountID</value>
+				<value>name</value>
+				<value>amount</value>
+				<value>date</value>
+				<value>address</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="creditBillProcessor" scope="step" class="org.heyframework.test.batch.CreditBillProcessor"></bean>
+
+	<bean id="itemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
+		<property name="resource" value="file:/Users/helei/Downloads/bill-out.txt" />
+		<property name="lineAggregator">
+			<bean class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+				<property name="delimiter" value="," />
+				<property name="fieldExtractor">
+					<bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+						<property name="names" value="accountID,name,amount,date,address" />
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+</beans>
