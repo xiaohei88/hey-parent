@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:batch="http://www.springframework.org/schema/batch" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/batch
+        http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+	<!-- 定义作业仓库，任何任务的操作都会被记录在作业仓库中，spring batch提供了两种，一种是内存，一种是数据库 -->
+	<!-- 内存 -->
+	<!-- <bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean" /> -->
+
+	<!-- 数据库 -->
+	<!-- isolation-level-for-create:SERIALIZABLE：定义创建Job Execution时候的事务隔离级别，避免多个Job Execution执行一个Job Instance -->
+	<batch:job-repository id="jobRepository" data-source="dataSource" transaction-manager="dataTransactionManager"
+		isolation-level-for-create="SERIALIZABLE" table-prefix="BATCH_" max-varchar-length="1000" />
+
+	<bean id="dataTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://10.45.53.6:3307/dms" />
+		<property name="username" value="dms" />
+		<property name="password" value="dms" />
+	</bean>
+
+	<!-- 作业调度器，用来启动job -->
+	<bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+
+	<!-- 定义了食物管理器，用于spring batch框架在对数据操作过程中国年提供事务能力 -->
+	<bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+</beans>

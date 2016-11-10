@@ -22,7 +22,7 @@ public class RunJob {
 		Job job = (Job) context.getBean("billJob");
 
 		try {
-			JobExecution result = jobLauncher.run(job, new JobParametersBuilder().addString("date", "20130309").toJobParameters());
+			JobExecution result = jobLauncher.run(job, new JobParametersBuilder().addString("date", "20161025").toJobParameters());
 			System.out.println(result.toString());
 		} catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException | JobParametersInvalidException e) {
 		}

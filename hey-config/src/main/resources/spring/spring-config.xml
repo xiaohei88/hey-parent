@@ -5,6 +5,9 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
 
+	<!-- </beans>后面不能写任何配置了，否则报错。要写只能写在前面 -->
+	<!-- 例如：import放到</beans>后面，就会报错 -->
+
 	<!-- 加载资源文件 -->
 	<beans profile="dev">
 		<context:property-placeholder location="classpath*:application-dev.properties" />
