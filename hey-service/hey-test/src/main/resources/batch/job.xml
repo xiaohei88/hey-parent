@@ -9,13 +9,26 @@
         http://www.springframework.org/schema/batch
         http://www.springframework.org/schema/batch/spring-batch.xsd">
 
-	<import resource="job-context.xml" />
+	<!-- <import resource="job-context.xml" /> -->
+
+	<bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean" />
+
+	<bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+
+	<bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
 
 	<batch:job id="billJob">
 		<batch:step id="billStep">
 			<batch:tasklet transaction-manager="transactionManager">
 				<!-- commit-interval:表示提交间隔的大小，即每处理4条数据，进行一次写入操作，这样可以提高写的效率，在面向大数据量的批处理操作中，可以将commit-interval设置1000~10000的值 -->
-				<batch:chunk reader="itemReader" writer="itemWriter" processor="creditBillProcessor" commit-interval="4"></batch:chunk>
+				<batch:chunk reader="itemReader" writer="compositeItemWriter" processor="creditBillProcessor" commit-interval="4">
+					<batch:streams>
+						<batch:stream ref="itemWriter" />
+						<batch:stream ref="testWriter" />
+					</batch:streams>
+				</batch:chunk>
 			</batch:tasklet>
 		</batch:step>
 	</batch:job>
@@ -52,6 +65,15 @@
 
 	<bean id="creditBillProcessor" scope="step" class="org.heyframework.test.batch.CreditBillProcessor"></bean>
 
+	<bean id="compositeItemWriter" class="org.springframework.batch.item.support.CompositeItemWriter">
+		<property name="delegates">
+			<list>
+				<ref bean="itemWriter" />
+				<ref bean="testWriter" />
+			</list>
+		</property>
+	</bean>
+
 	<bean id="itemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
 		<property name="resource" value="file:/Users/helei/Downloads/bill-out.txt" />
 		<property name="lineAggregator">
@@ -65,4 +87,6 @@
 			</bean>
 		</property>
 	</bean>
+
+	<bean id="testWriter" class="org.heyframework.test.batch.TestWriter" />
 </beans>
