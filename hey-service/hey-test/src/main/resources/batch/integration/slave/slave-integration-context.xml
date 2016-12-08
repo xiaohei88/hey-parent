@@ -22,6 +22,8 @@
 
 	<!-- Slave request messages begin here -->
 
+	<!-- <int-jms:message-driven-channel-adapter id="jmsRequests" connection-factory="connectionFactory" destination-name="LHOfrequests" channel="requests"/> -->
+
 	<int-jms:inbound-channel-adapter id="jmsRequests" connection-factory="connectionFactory" destination-name="LHOfrequests"
 		channel="requests">
 		<integration:poller fixed-delay="500"></integration:poller>

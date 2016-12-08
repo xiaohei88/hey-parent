@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.heyframework.test.integration;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.configuration.DuplicateJobException;
+import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.configuration.support.ApplicationContextFactory;
+import org.springframework.batch.core.configuration.support.GenericApplicationContextFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
+import org.springframework.integration.annotation.MessageEndpoint;
+import org.springframework.integration.annotation.ServiceActivator;
+
+/**
+ * Load XML from a Spring {@link Resource} and create an
+ * {@link ApplicationContext}, registering any {@link Job} instances defined in
+ * a {@link JobRegistry}. If this component is itself configured with Spring,
+ * then its own ApplicationContext will be the parent for the new one, and the
+ * child will inherit AOP configuration, as well as property placeholder and
+ * custom editor configuration from the parent.
+ * 
+ * @author Dave Syer
+ * @author Michael Minella
+ * 
+ */
+@MessageEndpoint
+public class JobConfigurationResourceLoader implements ApplicationContextAware {
+
+	private ApplicationContext parent;
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.parent = applicationContext;
+	}
+
+	@ServiceActivator
+	public String loadJobs(Resource resource) throws DuplicateJobException {
+		createApplicationContextFactory(parent, resource);
+		return "test2222222222222222222222";
+	}
+
+	/**
+	 * Create an application context from the resource provided. Extension point
+	 * for subclasses if they need to customize the context in any way. The
+	 * default uses a {@link GenericApplicationContextFactory}.
+	 * 
+	 * @param parent the parent application context (or null if there is none)
+	 * @param resource the location of the XML configuration
+	 * 
+	 * @return an application context containing jobs
+	 */
+	protected ApplicationContextFactory createApplicationContextFactory(ApplicationContext parent, Resource resource) {
+		GenericApplicationContextFactory applicationContextFactory = new GenericApplicationContextFactory(resource);
+		if (parent != null) {
+			applicationContextFactory.setApplicationContext(parent);
+		}
+		return applicationContextFactory;
+	}
+
+}

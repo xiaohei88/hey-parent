@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:int-twitter="http://www.springframework.org/schema/integration/twitter" xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
+   http://www.springframework.org/schema/context
+   http://www.springframework.org/schema/context/spring-context.xsd
    http://www.springframework.org/schema/beans
    http://www.springframework.org/schema/beans/spring-beans.xsd
    http://www.springframework.org/schema/integration
@@ -11,4 +14,17 @@
    http://www.springframework.org/schema/integration/stream
    http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
 
+	<context:component-scan base-package="org.heyframework.test.integration" />
+
+	<int:channel id="helloWorldChannel" />
+
+	<!-- service-activator是一个适配器(服务激活器)，指示所有发送到helloWorldChannel的消息，都应转发到helloServiceImpl的hello()方法中。 -->
+	<int:service-activator input-channel="helloWorldChannel" ref="helloServiceImpl" method="hello" />
+
+	<int:channel id="helloWorldWithReplyChannel" />
+
+	<int:service-activator input-channel="helloWorldWithReplyChannel" ref="helloServiceImpl" method="getHelloMessage" />
+
+	<int:gateway id="helloWorldGateway" service-interface="org.heyframework.test.integration.GreeterService"
+		default-request-channel="helloWorldWithReplyChannel" />
 </beans>

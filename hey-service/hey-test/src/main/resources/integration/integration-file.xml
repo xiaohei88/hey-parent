@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-twitter="http://www.springframework.org/schema/integration/twitter" xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:file="http://www.springframework.org/schema/integration/file"
+	xsi:schemaLocation="
+   http://www.springframework.org/schema/context
+   http://www.springframework.org/schema/context/spring-context.xsd
+   http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/integration
+   http://www.springframework.org/schema/integration/spring-integration.xsd
+   http://www.springframework.org/schema/integration/file
+   http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+   http://www.springframework.org/schema/integration/twitter
+   http://www.springframework.org/schema/integration/twitter/spring-integration-twitter.xsd
+   http://www.springframework.org/schema/integration/stream
+   http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
+
+	<int:channel id="job-configuration-files" />
+	<int:channel id="test"></int:channel>
+
+	<int:publish-subscribe-channel id="job-registrations" />
+
+	<int:logging-channel-adapter channel="job-registrations" level="DEBUG" />
+
+	<int:service-activator input-channel="job-configuration-files" output-channel="job-configurations">
+		<bean class="org.heyframework.test.integration.FileToResourceAdapter" />
+	</int:service-activator>
+
+	<int:service-activator input-channel="job-configurations" output-channel="job-registrations">
+		<bean class="org.heyframework.test.integration.JobConfigurationResourceLoader">
+		</bean>
+	</int:service-activator>
+
+	<file:outbound-gateway directory="/Users/helei/Downloads/output" request-channel="test" reply-channel="job-configuration-files"></file:outbound-gateway>
+
+	<file:inbound-channel-adapter directory="/Users/helei/Downloads/file" channel="test" filename-pattern="*.xml">
+		<int:poller fixed-rate="5000" />
+	</file:inbound-channel-adapter>
+
+	<!-- 文件类型-输出通道适配器 -->
+	<!-- <file:outbound-channel-adapter directory="/Users/helei/Downloads/output" channel="job-configuration-files" /> -->
+</beans>
