@@ -51,7 +51,7 @@ public class Test {
 		// Four
 		List<String> languages = Arrays.asList("Java", "Scala", "C++", "Haskell", "Lisp");
 		System.out.println("Languages which starts with J :");
-		filter(languages, (str) -> str.startsWith("J"));
+		filter(languages, str -> str.startsWith("J"));
 		System.out.println("Languages which ends with a ");
 		filter(languages, (str) -> str.endsWith("a"));
 		System.out.println("Print all languages :");
