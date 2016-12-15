@@ -20,6 +20,14 @@ public class SynchronousQueueTest {
 		test.aa(4);
 		test.aa(5);
 		test.aa(6);
+		test.aa(61);
+		test.aa(62);
+		test.aa(63);
+		test.aa(64);
+		test.aa(65);
+		test.aa(66);
+		test.aa(67);
+		test.aa(68);
 	}
 
 	final SynchronousQueue<Integer> queue = new SynchronousQueue<Integer>();
